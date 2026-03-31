@@ -1,0 +1,30 @@
+---
+description: "Architecture constraints for Excalidraw"
+globs: packages/excalidraw/**
+alwaysApply: false
+---
+
+# Excalidraw Architecture
+
+## State Management
+
+- Custom state via actionManager — NOT Redux/Zustand/MobX
+- State updates: actionManager.dispatch() ONLY
+- State type: AppState (packages/excalidraw/types.ts)
+
+## Rendering
+
+- Canvas 2D rendering — NOT React DOM for drawing
+- Render pipeline: Scene → renderScene() → canvas context
+- DO NOT use react-konva, fabric.js, pixi.js
+
+## Dependencies
+
+- No new npm packages without explicit approval
+- Check packages/utils/ before adding external helpers
+
+## How to verify
+
+1. Search `packages/excalidraw` for imports or references to Redux, Zustand, MobX, `react-konva`, `fabric`, or `pixi`; any new usage should be absent unless explicitly approved.
+2. Skim changed `packages/excalidraw` files for state updates: prefer paths that go through the action system (`dispatch` / `actionManager`) rather than ad-hoc cross-module mutation of editor state.
+3. Before adding a dependency, list `packages/utils/src` (or existing exports) and root workspace `package.json` / `packages/excalidraw/package.json`; if you add a new package entry, confirm review/approval is documented in the PR.

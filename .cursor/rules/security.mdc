@@ -1,0 +1,28 @@
+---
+description: "Security boundaries for embeds, scene data, collaboration host, and secrets in this Excalidraw monorepo"
+globs: packages/**/*.ts,packages/**/*.tsx,excalidraw-app/**/*.ts,excalidraw-app/**/*.tsx,examples/**/*.ts,examples/**/*.tsx
+alwaysApply: false
+---
+
+# Security (Excalidraw monorepo)
+
+## Context
+
+The library renders user-controlled diagrams, links, embeds, and pasted files. Product docs place **URL sanitization** and **embed validation** in specific packages and props, while **realtime transport and authorization** stay in the host app. This rule turns those boundaries into concrete expectations so changes do not silently expand XSS or trust assumptions.
+
+## Rule
+
+- **Embeds and links** — Keep embed safety aligned with `validateEmbeddable` / `renderEmbeddable` (`packages/excalidraw/types.ts`, wired from `packages/excalidraw/index.tsx` and `components/App.tsx`) and `embeddableURLValidator` / `validateEmbeddable` handling in `packages/element/src/embeddable.ts` and `components/hyperlink/Hyperlink.tsx`. **DO NOT** weaken default validation or render arbitrary third-party URLs without an explicit, reviewed threat model.
+- **URL sanitization** — Prefer existing **`@braintree/sanitize-url`** usage in **`@excalidraw/utils`** (see `docs/technical/architecture.md` dependency table) for export/link flows; **DO NOT** introduce parallel URL “cleanup” helpers in feature code without the same bar.
+- **Untrusted scene data** — Treat imported **JSON scenes**, **library payloads**, and **`BinaryFiles`** as untrusted input. Serialization and restore live under **`packages/excalidraw/data/`**; follow the repo **protected-files** policy for `packages/excalidraw/data/restore.ts` and avoid expanding deserialization surface (e.g. `eval`, dynamic `Function`, unsandboxed HTML) from document or file content.
+- **Collaboration and identity** — **Socket.IO / Firebase** and room logic belong in **`excalidraw-app/`** (per `docs/product/PRD.md` §6.3). The embed library does **not** provide authorization; **NEVER** assume the editor authenticates participants when adding collab or sync features—enforce access on the host/transport layer.
+- **Clipboard and file paste** — Pasted content can include **large binaries** (`docs/product/PRD.md` §6.5). When extending paste/import or host callbacks, preserve or add **size/quota** checks at integration boundaries; **DO NOT** rely on the canvas alone for malware or storage policy.
+- **Observability and third-party services** — **Sentry** and similar keys are **app-level** (`docs/product/PRD.md` §6.6). **NEVER** commit DSNs, Firebase config secrets, or private tokens; follow existing **env / build** patterns in `excalidraw-app` and Docker/build scripts.
+- **Dual dev/prod bundles** — **DO NOT** ship dev-only logging, debug endpoints, or permissive CORS defaults in **production** entry paths (`dist/prod` / app production build); misconfiguration there leaks behavior described in PRD §6.6.
+
+## How to verify
+
+1. Read **`docs/product/PRD.md`** §6.3–6.6 and **`docs/technical/architecture.md`** (data I/O under `packages/excalidraw/data/`, `@excalidraw/utils` + `sanitize-url`) and confirm any embed/link/collab change still matches those boundaries.
+2. For embed or hyperlink edits, grep **`validateEmbeddable`**, **`renderEmbeddable`**, **`embeddableURLValidator`**, and **`packages/element/src/embeddable.ts`**; confirm new code paths still call validation before rendering or navigating.
+3. For collaboration or storage changes under **`excalidraw-app/`**, confirm secrets use **environment/config** patterns already in the app, not hardcoded strings in source.
+4. If **`packages/excalidraw/data/restore.ts`** or other protected files are touched, follow **`.cursor/rules/do-not-touch.mdc`** (approval, tests, QA) before merging.

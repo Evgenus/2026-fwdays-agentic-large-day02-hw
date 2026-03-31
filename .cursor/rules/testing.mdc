@@ -1,0 +1,56 @@
+---
+description: "Vitest, Testing Library, snapshots, and quality gates for this monorepo"
+globs: "**/*.test.ts,**/*.test.tsx,vitest.config.mts,setupTests.ts"
+alwaysApply: false
+---
+
+# Testing conventions
+
+## Context
+
+Tests guard regressions across Yarn workspaces (`packages/*`, `excalidraw-app/`). The stack is **Vitest** with **jsdom**, shared setup in [`setupTests.ts`](../../setupTests.ts), and path aliases mirroring the app ([`vitest.config.mts`](../../vitest.config.mts)). This rule aligns edits with existing patterns and with [`docs/technical/dev-setup.md`](../../docs/technical/dev-setup.md) §7 and upstream [`dev-docs/docs/introduction/development.mdx`](../../dev-docs/docs/introduction/development.mdx) / [`contributing.mdx`](../../dev-docs/docs/introduction/contributing.mdx).
+
+## Rule
+
+### Runner and environment
+
+- **Vitest** is the test runner (`yarn test` → `yarn test:app`). **DO NOT** introduce Jest-only APIs unless wrapped by Vitest compatibility.
+- **Globals** are enabled (`describe`, `it`, `expect`, `vi` from `vitest` where explicit imports are needed).
+- Default environment is **jsdom** (see `vitest.config.mts`). Canvas-related code relies on **`vitest-canvas-mock`** loaded from setup.
+- **Setup** is centralized: extend behavior via [`setupTests.ts`](../../setupTests.ts) only when the change applies repo-wide; otherwise mock locally in the test file.
+
+### Placement and naming
+
+- **Colocate** component tests: `ComponentName.test.tsx` next to the component (see [conventions](conventions.mdc)).
+- **Package suites** also use `packages/<pkg>/tests/**/*.test.ts(x)` or `src/__tests__/` where that pattern already exists—**match the nearest sibling tests** in the same package.
+- **App shell** tests live under `excalidraw-app/tests/`.
+
+### Libraries and style
+
+- Use **@testing-library/react** for component tests; **@testing-library/jest-dom** matchers are available from setup.
+- Prefer **`data-testid`** (or role/label queries) over brittle DOM structure assertions when querying rendered output.
+- **Import types** with `import type` per project TypeScript conventions; **AVOID** `any` and new `@ts-ignore` in new or heavily touched test code—fix types or narrow casts.
+- Editor integration tests often use helpers under `packages/excalidraw/tests/helpers/` and `packages/excalidraw/tests/test-utils.ts`; **reuse** them instead of duplicating bootstrapping.
+
+### Snapshots and visual behavior
+
+- Run **`yarn test:update`** only when output changes are **intentional** (canvas/snapshot tests). Review diff carefully; do not blanket-accept unrelated snapshot churn.
+- Upstream contributing docs recommend **a regression test per bug fix** when feasible.
+
+### Commands (what to run when)
+
+- **During development:** `yarn test` (watch).
+- **Before merge / full gate:** `yarn test:all` (typecheck + ESLint + Prettier + Vitest once)—see [`docs/technical/dev-setup.md`](../../docs/technical/dev-setup.md).
+- **Types only:** `yarn test:typecheck`.
+- **Coverage (optional):** `yarn test:coverage` (thresholds are defined in `vitest.config.mts`).
+
+### Pull requests
+
+- Use the **`test:`** semantic prefix when the change is **tests only** ([`dev-docs/docs/introduction/contributing.mdx`](../../dev-docs/docs/introduction/contributing.mdx)).
+- Manually exercise non-trivial UI in the app when automation is insufficient (same contributing guidance).
+
+## How to verify
+
+1. From the repo root, run `yarn test:all` and confirm it exits cleanly.
+2. For snapshot-affecting work, run `yarn test:update` once, inspect git diff for snapshots, then run `yarn test:app --watch=false` without update to confirm stability.
+3. Open `vitest.config.mts` and `setupTests.ts` if you change global test behavior; confirm `sequence.hooks` and aliases still match how packages import `@excalidraw/*`.

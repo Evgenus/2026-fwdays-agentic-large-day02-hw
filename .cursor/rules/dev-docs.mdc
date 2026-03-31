@@ -1,0 +1,21 @@
+---
+description: "Point agents to dev-docs (published-style API and integration docs)"
+alwaysApply: true
+---
+
+# Developer documentation (`dev-docs/`)
+
+Before answering integration, **@excalidraw/excalidraw** API/props, contributing flow, or **mermaid-to-excalidraw** behavior, consult the MDX sources under `dev-docs/docs/`.
+
+- **Introduction:** `dev-docs/docs/introduction/` — get started, development, contributing
+- **Library API & embedding:** `dev-docs/docs/@excalidraw/excalidraw/` — installation, integration, props, Excalidraw API, children components, utils (export/restore), FAQ
+- **Mermaid package:** `dev-docs/docs/@excalidraw/mermaid-to-excalidraw/`
+- **Codebase topics:** `dev-docs/docs/codebase/` (e.g. JSON schema, frames)
+
+Repo-specific toolchain and monorepo patterns: `docs/memory/techContext.md`, `docs/memory/systemPatterns.md`, and `AGENTS.md`.
+
+## How to verify
+
+1. Open `dev-docs/docs/` and confirm the relevant subtree exists (`introduction/`, `@excalidraw/excalidraw/`, `@excalidraw/mermaid-to-excalidraw/`, or `codebase/`) before answering from memory alone.
+2. For API or embedding answers, open the matching MDX under `dev-docs/docs/@excalidraw/excalidraw/` and check prop names, examples, and headings against what you stated.
+3. For Yarn workspaces, scripts, or package layout, open `docs/memory/techContext.md`, `docs/memory/systemPatterns.md`, and `AGENTS.md` and confirm paths and commands match.
