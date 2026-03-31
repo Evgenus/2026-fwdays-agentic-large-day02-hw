@@ -70,9 +70,9 @@ Long-form diagrams and dependencies: [`docs/technical/architecture.md`](docs/tec
 
 Do **not** change these paths without **explicit written approval**, full understanding of dependents, **`yarn test:all`**, and recorded manual QA (canvas, open/save, actions as relevant):
 
-- `packages/excalidraw/scene/renderer.ts` — render pipeline  
+- `packages/excalidraw/scene/Renderer.ts` — render pipeline  
 - `packages/excalidraw/data/restore.ts` — file format compatibility  
-- `packages/excalidraw/actions/manager.ts` — action system  
+- `packages/excalidraw/actions/manager.tsx` — action system  
 - `packages/excalidraw/types.ts` — core types  
 
 Full checklist: [`.cursor/rules/do-not-touch.mdc`](.cursor/rules/do-not-touch.mdc). Related agent rules live under [`.cursor/rules/`](.cursor/rules/) (security, testing, dev-docs, architecture).

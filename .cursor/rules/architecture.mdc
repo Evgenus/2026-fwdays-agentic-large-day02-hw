@@ -8,14 +8,14 @@ alwaysApply: false
 
 ## State Management
 
-- Custom state via actionManager — NOT Redux/Zustand/MobX
-- State updates: actionManager.dispatch() ONLY
-- State type: AppState (packages/excalidraw/types.ts)
+- Custom state via `ActionManager` — NOT Redux/Zustand/MobX
+- State updates: action results must go through the `ActionManager` `updater` path (in `packages/excalidraw/components/App.tsx`, `new ActionManager(this.syncActionResult, …)`); `executeAction` / keyboard / panel flows call `this.updater(action.perform(…))`, and `syncActionResult` applies `ActionResult` to the app — there is no `dispatch()` API
+- State type: `AppState` (`packages/excalidraw/types.ts`)
 
 ## Rendering
 
 - Canvas 2D rendering — NOT React DOM for drawing
-- Render pipeline: Scene → renderScene() → canvas context
+- Render pipeline: `Scene` plus `Renderer` (`packages/excalidraw/scene/Renderer.ts`) for renderable/visible elements; static canvas painting uses `renderStaticScene` / `renderStaticSceneThrottled` from `packages/excalidraw/renderer/staticScene.ts` (`Renderer.destroy()` cancels `renderStaticSceneThrottled`) — NOT a legacy `renderScene()` entry point
 - DO NOT use react-konva, fabric.js, pixi.js
 
 ## Dependencies
@@ -26,5 +26,5 @@ alwaysApply: false
 ## How to verify
 
 1. Search `packages/excalidraw` for imports or references to Redux, Zustand, MobX, `react-konva`, `fabric`, or `pixi`; any new usage should be absent unless explicitly approved.
-2. Skim changed `packages/excalidraw` files for state updates: prefer paths that go through the action system (`dispatch` / `actionManager`) rather than ad-hoc cross-module mutation of editor state.
+2. Skim changed `packages/excalidraw` files for state updates: prefer `syncActionResult`, `ActionManager.executeAction`, or the `updater`/`perform` path rather than ad-hoc cross-module mutation of editor state.
 3. Before adding a dependency, list `packages/utils/src` (or existing exports) and root workspace `package.json` / `packages/excalidraw/package.json`; if you add a new package entry, confirm review/approval is documented in the PR.

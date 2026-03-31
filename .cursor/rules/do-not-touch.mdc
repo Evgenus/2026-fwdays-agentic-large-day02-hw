@@ -8,9 +8,9 @@ alwaysApply: true
 
 NEVER modify these files without explicit approval:
 
-- `packages/excalidraw/scene/renderer.ts` — render pipeline
+- `packages/excalidraw/scene/Renderer.ts` — render pipeline
 - `packages/excalidraw/data/restore.ts` — file format compat
-- `packages/excalidraw/actions/manager.ts` — action system
+- `packages/excalidraw/actions/manager.tsx` — action system
 - `packages/excalidraw/types.ts` — core types
 
 Changes to protected files require:
@@ -21,6 +21,9 @@ Changes to protected files require:
 
 ## How to verify
 
-1. Compare your branch to the merge base (e.g. `git diff --name-only <base>...HEAD`) and confirm none of the four protected paths changed unless there is explicit written approval for that edit.
-2. If a protected file did change with approval, run `yarn test:all` from the repo root and record what manual QA you ran (canvas flows, open/save, actions) in the PR or change log.
-3. For reviews, open each touched protected file in the diff and confirm the change size and risk match the stated reason (render pipeline, restore format, actions, or core types).
+1. **Paths match the tree (quick check):** From the repo root, all four listed paths must resolve on disk (casing included), e.g.  
+   `test -f packages/excalidraw/scene/Renderer.ts && test -f packages/excalidraw/actions/manager.tsx && test -f packages/excalidraw/data/restore.ts && test -f packages/excalidraw/types.ts`  
+   If any command fails, the rule text is out of sync with the repo.
+2. **Change detection:** This rule guides agents and reviewers; it does not install a git hook or “rule-check” script by default—nothing auto-blocks commits. Treat violations as a failed policy check by comparing your branch to the merge base, e.g. `git diff --name-only <base>...HEAD`, and confirm none of the four protected paths changed unless there is explicit written approval for that edit.
+3. If a protected file did change with approval, run `yarn test:all` from the repo root and record what manual QA you ran (canvas flows, open/save, actions) in the PR or change log.
+4. For reviews, open each touched protected file in the diff and confirm the change size and risk match the stated reason (render pipeline, restore format, actions, or core types).
