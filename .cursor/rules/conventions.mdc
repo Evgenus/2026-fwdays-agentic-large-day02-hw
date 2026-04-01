@@ -9,14 +9,14 @@ alwaysApply: false
 ## Components
 
 - Functional components + hooks ONLY (no class components)
-- Props interface: `{ComponentName}Props`
+- Props type: `{ComponentName}Props`
 - Named exports only (no default exports)
 - Colocated tests: `ComponentName.test.tsx`
 
 ## TypeScript
 
 - Strict mode — no `any`, no `@ts-ignore`
-- Prefer `type` over `interface` for simple types
+- Prefer `type` over `interface` for simple types; for React components, that includes the props alias `{ComponentName}Props` (use `interface` only when declaration merging or extending an external interface requires it)
 - Import types: `import type { X } from "..."`
 
 ## Files
