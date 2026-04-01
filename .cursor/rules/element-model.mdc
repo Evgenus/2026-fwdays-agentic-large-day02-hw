@@ -1,0 +1,26 @@
+---
+description: "Scene, Store, element mutations, and deltas in @excalidraw/element"
+globs: "packages/element/**/*.ts,packages/element/**/*.tsx"
+alwaysApply: false
+---
+
+# Element model (`@excalidraw/element`)
+
+## Context
+
+This package owns the **element domain model**, **`Scene`**, **`Store`** / **deltas**, and low-level **mutation** and geometry helpers consumed by `@excalidraw/excalidraw`. Changes here affect **undo**, **collaboration increments**, and **render invalidation** across the editor. Deeper structure and coupling notes: [`docs/findings/element-package-architecture.md`](../../docs/findings/element-package-architecture.md); package boundary summary: [`docs/memory/systemPatterns.md`](../../docs/memory/systemPatterns.md) (Package boundaries, Scene data row).
+
+## Rule
+
+- **Scene as element source of truth** — Prefer updating elements through **`Scene`** APIs and **`mutateElement`** (module or instance) so maps, caches, and **`sceneNonce`** stay consistent. **DO NOT** bypass scene bookkeeping by mutating shared element references in ad hoc ways.
+- **Store and capture** — Changes that should participate in **undo** / **history** must align with **`Store`** snapshot semantics and **`CaptureUpdateAction`** (`IMMEDIATELY` / `EVENTUALLY` / `NEVER`) as described in the findings doc. **AVOID** new silent mutation paths that skip capture when the editor expects a recordable step.
+- **Package boundary** — **NEVER** add **`ActionManager`** or React UI here; orchestration stays in **`@excalidraw/excalidraw`**. This package defines **how** changes are represented and observed, not **when** user commands run.
+- **Dependencies** — Runtime deps stay **`@excalidraw/common`** and **`@excalidraw/math`**; type-only coupling upward is acceptable where the codebase already does it (e.g. **`App`** / **`AppState`** in `store.ts`). **DO NOT** introduce heavy runtime imports from `excalidraw-app/` or arbitrary new upward package cycles without an explicit design reason.
+- **Types** — **`ExcalidrawElement`** and related unions live in this package; extend them carefully so consumers and restore paths stay consistent. Follow project TypeScript conventions ([`conventions.mdc`](conventions.mdc)): no `any`, no new `@ts-ignore` in touched code.
+
+## How to verify
+
+1. From the repo root, run `yarn test:typecheck`.
+2. Run element-scoped tests: `yarn test:app --watch=false packages/element`.
+3. For Store / delta / Scene behavior changes, skim [`docs/findings/element-package-architecture.md`](../../docs/findings/element-package-architecture.md) §3–4 and confirm the edit matches the described pipeline.
+4. Before merge, run the full gate when behavior is non-trivial: `yarn test:all` (per [`AGENTS.md`](../../AGENTS.md)).

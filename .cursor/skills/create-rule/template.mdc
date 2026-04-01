@@ -1,0 +1,21 @@
+---
+description: "One line: what this rule covers and when it applies"
+globs: "**/*.example"
+alwaysApply: false
+---
+
+# Rule title (plain language, not "Rule 1")
+
+## Context
+
+Why this rule exists and which problem or risk it addresses (2–4 sentences).
+
+## Rule
+
+- Actionable bullets; prefer imperative verbs.
+- For prohibitions, use **NEVER**, **DO NOT**, or **AVOID** explicitly.
+
+## How to verify
+
+1. Numbered steps another person (or an agent) can follow to confirm compliance (commands, files to open, or checks to run).
+2. …
